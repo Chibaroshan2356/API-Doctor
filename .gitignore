@@ -1,11 +1,31 @@
-/target/
+# Maven / Build
+
+target/
+.mvn/
+
+# Logs
+
+*.log
+
+# Compiled files
+
+*.class
+
+# IDE folders
+
 .idea/
 .vscode/
 *.iml
+
+# OS files
+
 .DS_Store
+Thumbs.db
 
-# Logs
-*.log
+# Node (if frontend added later)
 
-# Maven local
-.mvn/
+node_modules/
+
+# Environment files
+
+.env
