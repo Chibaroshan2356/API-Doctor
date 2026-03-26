@@ -1,8 +1,8 @@
 package com.apidoctor.api_doctor.service;
 
+import com.apidoctor.api_doctor.entity.ApiConfig;
 import com.apidoctor.api_doctor.entity.ApiMetric;
 import com.apidoctor.api_doctor.repository.ApiMetricRepository;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -15,41 +15,37 @@ public class ApiMonitorService {
     private final WebClient webClient;
     private final ApiMetricRepository apiMetricRepository;
 
-    public ApiMonitorService(WebClient webClient, ApiMetricRepository apiMetricRepository) {
+    public ApiMonitorService(WebClient webClient,
+            ApiMetricRepository apiMetricRepository) {
         this.webClient = webClient;
         this.apiMetricRepository = apiMetricRepository;
     }
 
-    @Scheduled(fixedRate = 60000)
-    public void checkApi() {
-
-        String apiName = "JSONPlaceholder";
-        String apiUrl = "https://jsonplaceholder.typicode.com/posts/1";
+    public void checkApi(ApiConfig api) {
 
         long start = System.currentTimeMillis();
 
         webClient.get()
-                .uri(apiUrl)
+                .uri(api.getUrl())
                 .retrieve()
                 .toEntity(String.class)
                 .flatMap(response -> {
 
-                    long end = System.currentTimeMillis();
-                    long responseTime = end - start;
+                    long responseTime = System.currentTimeMillis() - start;
 
                     int statusCode = response.getStatusCode().value();
 
                     ApiMetric metric = new ApiMetric();
-                    metric.setApiName(apiName);
-                    metric.setApiUrl(apiUrl);
+                    metric.setApiName(api.getName());
+                    metric.setApiUrl(api.getUrl());
                     metric.setCheckedAt(LocalDateTime.now());
                     metric.setResponseTimeMs(responseTime);
                     metric.setStatusCode(statusCode);
-                    metric.setSuccess(true);
+                    metric.setSuccess(statusCode == api.getExpectedStatus());
 
                     apiMetricRepository.save(metric);
 
-                    System.out.println("API Checked: " + apiName +
+                    System.out.println("API Checked: " + api.getName() +
                             " | Status: " + statusCode +
                             " | Time: " + responseTime + "ms");
 
@@ -57,12 +53,11 @@ public class ApiMonitorService {
                 })
                 .onErrorResume(error -> {
 
-                    long end = System.currentTimeMillis();
-                    long responseTime = end - start;
+                    long responseTime = System.currentTimeMillis() - start;
 
                     ApiMetric metric = new ApiMetric();
-                    metric.setApiName(apiName);
-                    metric.setApiUrl(apiUrl);
+                    metric.setApiName(api.getName());
+                    metric.setApiUrl(api.getUrl());
                     metric.setCheckedAt(LocalDateTime.now());
                     metric.setResponseTimeMs(responseTime);
                     metric.setStatusCode(0);
@@ -70,7 +65,7 @@ public class ApiMonitorService {
 
                     apiMetricRepository.save(metric);
 
-                    System.out.println("API FAILED: " + apiName);
+                    System.out.println("API FAILED: " + api.getName());
 
                     return Mono.empty();
                 })

@@ -1,22 +1,20 @@
 package com.apidoctor.api_doctor.service;
 
 import com.apidoctor.api_doctor.entity.ApiConfig;
-import com.apidoctor.api_doctor.repository.ApiConfigRepository;
-import com.apidoctor.api_doctor.service.impl.ApiMonitorServiceImpl;
-
+import com.apidoctor.repository.ApiConfigRepository;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Component
+@Service
 public class ApiMonitorScheduler {
 
     private final ApiConfigRepository repository;
-    private final ApiMonitorServiceImpl monitorService;
+    private final ApiMonitorService monitorService;
 
     public ApiMonitorScheduler(ApiConfigRepository repository,
-            ApiMonitorServiceImpl monitorService) {
+            ApiMonitorService monitorService) {
         this.repository = repository;
         this.monitorService = monitorService;
     }
@@ -26,9 +24,8 @@ public class ApiMonitorScheduler {
 
         List<ApiConfig> apis = repository.findByActiveTrue();
 
-        for (ApiConfig api : apis) {
+        apis.parallelStream().forEach(api -> {
             monitorService.checkApi(api);
-        }
-
+        });
     }
 }
