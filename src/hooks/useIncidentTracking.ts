@@ -38,8 +38,8 @@ export const useIncidentTracking = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Base API URL - adjust as needed
-  const API_BASE_URL = '/api/incidents';
+  // Base API URL
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api/incidents`;
 
   // Fetch all incidents
   const fetchIncidents = useCallback(async () => {
