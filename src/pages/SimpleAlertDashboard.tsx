@@ -163,7 +163,10 @@ const SimpleAlertDashboard: React.FC = () => {
       toast.error("❌ Failed to add API");
     }
   };
-      
+
+  const testSound = async (type: string) => {
+    try {
+      const testAudio = new Audio();
       const playPromise = testAudio.play();
       if (playPromise !== undefined) {
         await playPromise;
