@@ -26,12 +26,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true
   },
-  define: {
-    // Use Railway backend URL in production, localhost in development
-    'import.meta.env.VITE_API_URL': JSON.stringify(
-      process.env.NODE_ENV === 'production' 
-        ? 'https://api-doctor-backend-production.up.railway.app'
-        : 'http://localhost:8083'
-    )
-  }
+  define: {}
+
 })
